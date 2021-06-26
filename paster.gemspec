@@ -9,4 +9,7 @@ Gem::Specification.new do |spec|
   spec.metadata     = {"source_code_uri" => "https://github.com/nakilon/paster"}
 
   spec.files        = %w{ LICENSE paster.gemspec lib/paster.rb bin/paster.rb }
+
+  spec.add_dependency "nethttputils"
+  spec.add_dependency "github-linguist"
 end
