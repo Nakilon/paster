@@ -28,3 +28,35 @@ gem pristine charlock_holmes
 ```
 
 TODO: make it able to ignore the missing/broken dependency needed for automatic language detection
+
+## TODO
+
+- [x] usage example
+- [ ] tests
+- [ ] options
+- [ ] tty-prompt powered dialog
+- [ ] save preferences
+- [ ] push to rubygems
+- [ ] announce
+- [ ] APIs
+  - [ ] pastebin.com
+  - [ ] dpaste.com
+  - [ ] paste.org.ru
+  - [x] sprunge.us
+  - [ ] gist.github.com
+  - [ ] paste.debian.net
+  - [ ] dpaste.org
+  - [ ] ix.io
+  - [ ] vpaste.net
+  - [x] paste.the-compiler.org
+  - [ ] termbin.com
+  - [ ] 0x0.st
+  - [ ] clbin.com
+  - [ ] paste.rs
+  - [ ] pastefy.ga
+  - [ ] p.6core.net
+  - [ ] bpa.st
+  - [ ] bsd.to
+  - [ ] paste.tomsmeding.com
+  - [ ] paste.nginx.org
+  - [ ] envs.sh
