@@ -45,7 +45,7 @@ def Paster paste
   def initialize
     STDOUT.sync = true
     require "linguist"
-    @lang = Linguist.detect(Linguist::Blob.new "", self.class.instance_variable_get(:@paste)).name
+    @lang = Linguist.detect(Linguist::Blob.new "", self.class.instance_variable_get(:@paste))&.name
   end
 
   def paste

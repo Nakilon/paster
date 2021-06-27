@@ -2,6 +2,7 @@
 Signal.trap(:INT){ abort "\n(interrupted by SIGINT)" }
 
 paste = ARGF.read
+$stdin = open "/dev/tty"
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
@@ -25,10 +26,12 @@ paster = begin
     size.zero? ?
       {name: "#{name}", value: paster, disabled: "(no pastebins)"} :
       {name: "#{name} (#{size})", value: paster}
+  }.tap{ |options|
+    abort "no pastebin for such size" if options.all?{ |_| _[:disabled] }
+    # otherwise tty-prompt fails with an unhandled exception, lol
   }, filter: true, cycle: true, per_page: 100
 rescue TTY::Reader::InputInterrupt
-  abort ""
+  abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the line
 end
 
 paster.paste
-
