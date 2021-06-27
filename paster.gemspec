@@ -12,4 +12,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "nethttputils"
   spec.add_dependency "github-linguist"
+  spec.add_dependency "oga"
+  spec.add_dependency "tty-prompt"
 end

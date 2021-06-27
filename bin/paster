@@ -1,5 +1,34 @@
 #!/usr/bin/env ruby
 Signal.trap(:INT){ abort "\n(interrupted by SIGINT)" }
 
+paste = ARGF.read
+puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
-Paster ARGF.read
+paster = Paster paste
+
+require "tty-prompt"
+paster = begin
+  TTY::Prompt.new.select "expiration:", {
+    "doesn't matter": false,
+    "burn after reading": "burn",
+    "keep forever": 0,
+    "5 minutes": 5,
+    "1 hour": 60,
+    "1 day": 1440,
+    "1 week": 10080,
+    "1 month": 40320,
+    "1 year": 483840,
+  }.map{ |name, value|
+    paster = paster.dup
+    paster.expire = value
+    size = paster.services.size
+    size.zero? ?
+      {name: "#{name}", value: paster, disabled: "(no pastebins)"} :
+      {name: "#{name} (#{size})", value: paster}
+  }, filter: true, cycle: true, per_page: 100
+rescue TTY::Reader::InputInterrupt
+  abort ""
+end
+
+paster.paste
+
