@@ -24,7 +24,7 @@ def Paster paste
           nil,
           ->_{
             found = File.read("lib/pygments.txt").scan(/pygments.lexers.([a-z_0-9]+)', '([^']+)'/).rassoc @lang
-            "#{_.strip}#{"?#{found.first}" if found}"
+            [_, ("#{_}?#{found.first}" if found)].compact
           },
         ],
         [
@@ -34,11 +34,13 @@ def Paster paste
           File.read("lib/genshi.txt").scan(/'([a-z_0-9-]+)' => '([^']+)',/).rassoc(@lang)&.first,
           nil,
           ->_{
-            next _ unless expire[0] == "burn"
+            s = expire[0] == "burn" ? ((
             require "oga"
-            Oga.parse_html(_).css("input").tap do |_|
+            s = Oga.parse_html(_).css("input").tap do |_|
               raise RuntimeError.new "can't parse response" unless 1 == _.size
             end.first["value"]
+            )) : _
+            [s, s.sub(/(.+)\//, "\\1/raw/")]
           }
         ],
         [
@@ -49,9 +51,10 @@ def Paster paste
           {"paste"=>"Send"},
           ->_{
             require "oga"
-            URI.join("https://paste.debian.net", Oga.parse_html(_).css("a").tap{ |_|
+            s = URI.join("https://paste.debian.net", Oga.parse_html(_).css("a").tap{ |_|
               raise RuntimeError.new "can't parse response" unless 1 == _.size
-            }.first["href"]).to_s
+            }.first["href"].chomp("/")).to_s
+            [s, s.sub(/(.+)\//, "\\1/plain/")]
           }
         ],
       ].reject do |max_size, possible_expiration, callback, expire, |
@@ -65,8 +68,9 @@ def Paster paste
       services.map do |_, _, _, expire, url, field, multipart, lang, extra, callback = ->_{_}|
         Thread.new do
           puts begin
-            callback.call NetHTTPUtils.request_data url, :post, *multipart, no_redirect: true,
+            callback.call NetHTTPUtils.request_data(url, :post, *multipart, no_redirect: true,
               form: {"lang" => lang, "expire" => expire}.map{ |k, v| [k, v.to_s] if v }.compact.to_h.merge(extra || {}).merge({field => self.class.instance_variable_get(:@paste)})
+            ).strip
           rescue => e
             "failed to paste to #{url}: #{e} -- consider reporting this issue to GitHub"
           end
