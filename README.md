@@ -31,24 +31,31 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
 
 ## TODO
 
-- [x] usage example
+- [ ] examples for README
+  - [x] plain text
+  - [ ] terminalizer gif
+- [ ] interfaces
+  - [x] tty-prompt
+  - [ ] command line options
+- [ ] pastebin options
+  - [x] expire
+  - [ ] raw
+- [ ] some debug options
 - [ ] tests
-- [ ] options
-- [ ] tty-prompt powered dialog
 - [ ] save preferences
 - [ ] push to rubygems
 - [ ] announce
 - [ ] APIs
+  - [x] sprunge.us
+  - [x] paste.the-compiler.org
+  - [x] paste.debian.net
   - [ ] pastebin.com
   - [ ] dpaste.com
   - [ ] paste.org.ru
-  - [x] sprunge.us
   - [ ] gist.github.com
-  - [ ] paste.debian.net
   - [ ] dpaste.org
   - [ ] ix.io
   - [ ] vpaste.net
-  - [x] paste.the-compiler.org
   - [ ] termbin.com
   - [ ] 0x0.st
   - [ ] clbin.com

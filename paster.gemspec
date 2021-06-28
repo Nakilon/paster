@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.files        = %w{ LICENSE paster.gemspec lib/paster.rb bin/paster.rb }
 
-  spec.add_dependency "nethttputils"
+  spec.add_dependency "nethttputils", "~>0.4.1.3"
   spec.add_dependency "github-linguist"
   spec.add_dependency "oga"
   spec.add_dependency "tty-prompt"

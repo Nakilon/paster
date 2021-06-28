@@ -8,17 +8,19 @@ require_relative "../lib/paster"
 paster = Paster paste
 
 require "tty-prompt"
-paster = begin
+begin
   TTY::Prompt.new.select "expiration:", {
-    "doesn't matter": false,
-    "burn after reading": "burn",
-    "keep forever": 0,
-    "5 minutes": 5,
-    "1 hour": 60,
-    "1 day": 1440,
-    "1 week": 10080,
-    "1 month": 40320,
-    "1 year": 483840,
+    "doesn't matter": [nil, 86400],
+    "burn after reading": ["burn"],
+    "keep forever": [0, -1],
+    "5 minutes": [5],
+    "1 hour": [60, 3600],
+    "1 day": [1440, 86400],
+    "3 days": [nil, 259200],
+    "1 week": [10080],
+    "1 month": [40320],
+    "3 months": [nil, 7776000],
+    "1 year": [483840],
   }.map{ |name, value|
     paster = paster.dup
     paster.expire = value
@@ -27,11 +29,9 @@ paster = begin
       {name: "#{name}", value: paster, disabled: "(no pastebins)"} :
       {name: "#{name} (#{size})", value: paster}
   }.tap{ |options|
-    abort "no pastebin for such size" if options.all?{ |_| _[:disabled] }
+    abort "no pastebin for such size" if options.all?{ |_| _[:disabled] }   # TODO: better error message
     # otherwise tty-prompt fails with an unhandled exception, lol
   }, filter: true, cycle: true, per_page: 100
 rescue TTY::Reader::InputInterrupt
   abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the line
-end
-
-paster.paste
+end.paste
