@@ -40,19 +40,21 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
 
 ## TODO
 
-- [ ] examples for README
+- [x] examples for README
   - [x] plain text
-  - [ ] terminalizer gif
+  - [x] gif
 - [ ] pastebin options
   - [x] expire
-  - [ ] raw
+  - [x] raw
+  - [ ] unlisted
+  - [ ] ...
 - [ ] CLI interfaces
   - [x] tty-prompt
   - [ ] command line options
 - [ ] some debug option
 - [ ] tests
 - [ ] save preferences
-- [ ] push to rubygems
+- [x] push to rubygems
 - [ ] announce
 - [ ] pastebins
   - [x] sprunge.us
