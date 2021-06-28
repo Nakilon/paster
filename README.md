@@ -4,14 +4,17 @@ For your convenience [I explored](https://github.com/Nakilon/pcbr-demo/blob/mast
 
 ## Usage
 
-The following command uploads a file to two pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
+The following command uploads a file to multiple pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
 
 ```none
 $ paster my_code.rb
 paste size: 126
 https://paste.the-compiler.org/view/f2a7b94f
 http://sprunge.us/xIPikX?ruby
+...
 ```
+
+![t-rec_1](https://user-images.githubusercontent.com/2870363/123653688-11005480-d836-11eb-8e07-3a9562c8596f.gif)
 
 The tool tries to automatically detect your paste language to behave according to the services' specifics.
 
