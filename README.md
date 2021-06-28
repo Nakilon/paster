@@ -2,6 +2,14 @@
 
 For your convenience [I explored](https://github.com/Nakilon/pcbr-demo/blob/master/pastebins.txt) the features of ~30 pastebin services and realised that people want different sets of features so I ~~made~~ am making a CLI that asks what exactly you want and then tries to upload your paste to all conforming pastebins services asynchronously printing the returned links until done or until you stop the process with `^C` and gracefully skipping failed submissions.
 
+## Installation
+
+```bash
+gem install paster
+```
+
+The tool tries to automatically detect your paste language to behave according to the services' specifics. The gem used for language detection depends on some things so you might need to do something like `brew install icu4c` if it's not installed yet.
+
 ## Usage
 
 The following command uploads a file to multiple pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
@@ -15,8 +23,6 @@ http://sprunge.us/xIPikX?ruby
 ```
 
 ![t-rec_1](https://user-images.githubusercontent.com/2870363/123653688-11005480-d836-11eb-8e07-3a9562c8596f.gif)
-
-The tool tries to automatically detect your paste language to behave according to the services' specifics.
 
 ## Possible issues
 
