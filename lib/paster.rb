@@ -18,7 +18,7 @@ def Paster paste
       [
         [
           10000000, [nil], nil,
-          expire[0],
+          nil,
           "http://sprunge.us", "sprunge", nil,
           nil,
           nil,
@@ -28,7 +28,7 @@ def Paster paste
           },
         ],
         [
-          15000000, [nil, "burn", 0, 5, 60, 1440, 10080, 40320, 483840], nil,
+          15000000, ["burn", 0, 5, 60, 1440, 10080, 40320, 483840], nil,
           expire[0],
           "https://paste.the-compiler.org/api/create", "text", nil,
           File.read("lib/genshi.txt").scan(/'([a-z_0-9-]+)' => '([^']+)',/).rassoc(@lang)&.first,
@@ -42,7 +42,7 @@ def Paster paste
           }
         ],
         [
-          150000, [nil, -1, 3600, 86400, 259200, 7776000], ->_{ 2 > _.count("\n") },
+          150000, [-1, 3600, 86400, 259200, 7776000], ->_{ 2 > _.count("\n") },
           expire[1],
           "https://paste.debian.net", "code", :multipart,
           File.read("lib/pygments.txt").scan(/([^']+)', \(([^)]*)/).map{ |_, __| [_, __[/(?<=')[^']*/]] }.assoc(@lang)&.last || "-1",

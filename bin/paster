@@ -9,10 +9,8 @@ paster = Paster paste
 
 require "tty-prompt"
 begin
-  TTY::Prompt.new.select "expiration:", {
-    "doesn't matter": [nil, 86400],
+  services = {
     "burn after reading": ["burn"],
-    "keep forever": [0, -1],
     "5 minutes": [5],
     "1 hour": [60, 3600],
     "1 day": [1440, 86400],
@@ -21,17 +19,20 @@ begin
     "1 month": [40320],
     "3 months": [nil, 7776000],
     "1 year": [483840],
+    "keep forever": [0, -1],
   }.map{ |name, value|
     paster = paster.dup
     paster.expire = value
     size = paster.services.size
     size.zero? ?
-      {name: "#{name}", value: paster, disabled: "(no pastebins)"} :
-      {name: "#{name} (#{size})", value: paster}
-  }.tap{ |options|
-    abort "no pastebin for such size" if options.all?{ |_| _[:disabled] }   # TODO: better error message
-    # otherwise tty-prompt fails with an unhandled exception, lol
-  }, filter: true, cycle: true, per_page: 100
+      [size, {name: "#{name}", value: paster, disabled: "(no pastebins)"}] :
+      [size, {name: "#{name} (#{size})", value: paster}]
+  }
+  abort "no pastebin for such size" if services.all?{ |__, _| _[:disabled] }   # TODO: better error message
+  # otherwise tty-prompt fails with an unhandled exception, lol
+  TTY::Prompt.new.select "expiration:", services.map(&:last),
+    default: services.max_by(&:first).last[:name],
+    filter: true, cycle: true, per_page: 100
 rescue TTY::Reader::InputInterrupt
   abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the line
 end.paste
