@@ -12,17 +12,51 @@ The tool tries to automatically detect your paste language to behave according t
 
 ## Usage
 
-The following command uploads a file to multiple pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
+Paster interactively asks you the options and the number in () means how many pastebin services support them.
 
 ```none
 $ paster my_code.rb
-paste size: 126
-https://paste.the-compiler.org/view/f2a7b94f
-http://sprunge.us/xIPikX?ruby
+paste size: 94
+detected language: Ruby
+expiration: (Press ↑/↓ arrow to move, Enter to select and letters to filter)
+  burn after reading (2)
+  5 minutes (2)
+‣ 1 hour (3)
+  1 day (3)
+  3 days (2)
+  1 week (2)
+  1 month (2)
+  3 months (2)
+  1 year (2)
+  keep forever (3)
+```
+
+Then it uploads a file to multiple pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
+
+```none
+$ paster my_code.rb
+paste size: 94
+detected language: Ruby
+expiration: 1 hour (3)
+raw:       http://sprunge.us/Pnc642
+formatted: https://paste.the-compiler.org/view/f194cffe
+raw:       https://paste.the-compiler.org/view/raw/f194cffe
+formatted: https://paste.debian.net/1205711
+raw:       https://paste.debian.net/plain/1205711
+delete:    https://paste.debian.net/delete/8080846590e7151ad30e47d0584aabf01922f1da
+```
+
+You can also pipe the stdout:
+
+```none
+$ ls -l | paster
 ...
 ```
 
+Some early version demo GIF:
 ![t-rec_1](https://user-images.githubusercontent.com/2870363/123653688-11005480-d836-11eb-8e07-3a9562c8596f.gif)
+
+The env var `LOGLEVEL_Paster` being set to `INFO` or `DEBUG` enriches the output with debug info from the underlying NetHTTPUtils gem.
 
 ## Possible issues
 
@@ -49,8 +83,8 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
   - [ ] unlisted
   - [ ] ...
 - [ ] CLI interfaces
-  - [x] tty-prompt
-  - [ ] command line options
+  - [x] interactive tty-prompt
+  - [ ] non-interactive mode
 - [ ] some debug option
 - [ ] tests
 - [ ] save preferences

@@ -1,11 +1,15 @@
 #!/usr/bin/env ruby
 Signal.trap(:INT){ abort "\n(interrupted by SIGINT)" }
+puts ""
+puts "(press ^C to abort)"
 
 paste = ARGF.read
 $stdin = open "/dev/tty"
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
+puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
+puts ""
 
 require "tty-prompt"
 begin
@@ -28,8 +32,10 @@ begin
       [size, {name: "#{name}", value: paster, disabled: "(no pastebins)"}] :
       [size, {name: "#{name} (#{size})", value: paster}]
   }
+
   abort "no pastebin for such size" if services.all?{ |__, _| _[:disabled] }   # TODO: better error message
   # otherwise tty-prompt fails with an unhandled exception, lol
+
   TTY::Prompt.new.select "expiration:", services.map(&:last),
     default: services.max_by(&:first).last[:name],
     filter: true, cycle: true, per_page: 100
