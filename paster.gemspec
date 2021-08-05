@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name         = "paster"
-  spec.version      = "0.0.2"
+  spec.version      = "0.0.3"
   spec.summary      = "universal asynchronous pastebin CLI"
 
   spec.author       = "Victor Maslov aka Nakilon"
@@ -8,6 +8,7 @@ Gem::Specification.new do |spec|
   spec.license      = "MIT"
   spec.metadata     = {"source_code_uri" => "https://github.com/nakilon/paster"}
 
+  spec.add_dependency "clipboard"
   spec.add_dependency "nethttputils", "~>0.4.1.3"
   spec.add_dependency "github-linguist"
   spec.add_dependency "oga"

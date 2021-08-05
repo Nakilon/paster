@@ -3,11 +3,14 @@ Signal.trap(:INT){ abort "\n(interrupted by SIGINT)" }
 puts ""
 puts "(press ^C to abort)"
 
-paste = ARGF.read
+paste = (!STDIN.tty? && !STDIN.closed? || ARGF.filename != ?-) ? ARGF.read : (require "clipboard"; Clipboard.paste)
+# https://stackoverflow.com/a/68673623/322020
+
 $stdin = open "/dev/tty"
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
+puts "preview: #{paste[0,30].inspect}#{"..." if paste.size > 30}"
 puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
 puts ""
 
@@ -42,3 +45,4 @@ begin
 rescue TTY::Reader::InputInterrupt
   abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the line
 end.paste
+puts ""

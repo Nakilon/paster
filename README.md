@@ -53,6 +53,8 @@ $ ls -l | paster
 ...
 ```
 
+Without argv or pipe it will consume your OS clipboard.
+
 Some early version demo GIF:
 ![t-rec_1](https://user-images.githubusercontent.com/2870363/123653688-11005480-d836-11eb-8e07-3a9562c8596f.gif)
 
