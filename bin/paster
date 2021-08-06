@@ -41,13 +41,13 @@ paster = begin
   require "tty-prompt"
   services_default = services.max_by(&:first).last
   if TTY::Prompt.new.select "change current options if needed:", [
-    {name: "expiration: #{services_default[:name]}", value: services},
-    {name: "proceed", value: nil},
-  ], default: "proceed",
-    filter: true, cycle: true, per_page: 100
-  TTY::Prompt.new.select "expiration:", services.map(&:last),
-    default: services_default[:name],
-    filter: true, cycle: true, per_page: 100
+        {name: "expiration: #{services_default[:name]}", value: services},
+        {name: "proceed", value: nil},
+      ], default: "proceed",
+        filter: true, cycle: true, per_page: 100
+    TTY::Prompt.new.select "expiration:", services.map(&:last),
+      default: services_default[:name],
+      filter: true, cycle: true, per_page: 100
   else
     services_default[:value]
   end
