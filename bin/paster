@@ -16,25 +16,25 @@ puts ""
 
 paster = begin  # TODO: we overwrite this identifier, why not?
   calculate_expire = lambda do
-  {
-    "burn after reading": ["burn"],
-    "5 minutes": [5],
-    "1 hour": [60, 3600],
-    "1 day": [1440, 86400],
-    "3 days": [nil, 259200],
-    "1 week": [10080],
-    "1 month": [40320],
-    "3 months": [nil, 7776000],
-    "1 year": [483840],
-    "keep forever": [0, -1],
-  }.map{ |name, value|
-    paster = paster.dup
-    paster.expire = value
-    size = paster.services.size
-    size.zero? ?
-      [size, {name: "#{name}",           value: [paster, "#{name}"          ], disabled: "(no pastebins)"}] :
-      [size, {name: "#{name} (#{size})", value: [paster, "#{name} (#{size})"]}]
-  }
+    {
+      "burn after reading": ["burn"],
+      "5 minutes": [5],
+      "1 hour": [60, 3600],
+      "1 day": [1440, 86400],
+      "3 days": [nil, 259200],
+      "1 week": [10080],
+      "1 month": [40320],
+      "3 months": [nil, 7776000],
+      "1 year": [483840],
+      "keep forever": [0, -1],
+    }.map{ |name, value|
+      paster = paster.dup
+      paster.expire = value
+      size = paster.services.size
+      size.zero? ?
+        [size, {name: "#{name}",           value: [paster, "#{name}"          ], disabled: "(no pastebins)"}] :
+        [size, {name: "#{name} (#{size})", value: [paster, "#{name} (#{size})"]}]
+    }
   end
   options_expire = calculate_expire.call
   abort "no pastebin for such size" if options_expire.all?{ |__, _| _[:disabled] }
