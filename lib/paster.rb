@@ -27,8 +27,8 @@ def Paster paste
       end
       [
         [
-          10000000, [nil], nil,
-          nil,
+          10000000, [0], nil,
+          expire[0],
           "http://sprunge.us", "sprunge", nil,
           nil,
           ->resp{
