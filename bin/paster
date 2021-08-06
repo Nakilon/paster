@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 Signal.trap(:INT){ abort "\n(interrupted by SIGINT)" }
 puts ""
-puts "(press ^C to abort)"
+# puts "(press ^C to abort)"
 
 paste = (!STDIN.tty? && !STDIN.closed? || ARGF.filename != ?-) ? ARGF.read : (require "clipboard"; Clipboard.paste)
 # https://stackoverflow.com/a/68673623/322020
@@ -10,12 +10,11 @@ $stdin = open "/dev/tty"
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
-puts "preview: #{paste[0,30].inspect}#{"..." if paste.size > 30}"
+puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspected : inspected[0,27] + "..."}}"
 puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
 puts ""
 
-require "tty-prompt"
-begin
+paster = begin
   services = {
     "burn after reading": ["burn"],
     "5 minutes": [5],
@@ -36,13 +35,30 @@ begin
       [size, {name: "#{name} (#{size})", value: paster}]
   }
 
-  abort "no pastebin for such size" if services.all?{ |__, _| _[:disabled] }   # TODO: better error message
+  abort "no pastebin for such size" if services.all?{ |__, _| _[:disabled] }
   # otherwise tty-prompt fails with an unhandled exception, lol
 
-  TTY::Prompt.new.select "expiration:", services.map(&:last),
-    default: services.max_by(&:first).last[:name],
+  require "tty-prompt"
+  services_default = services.max_by(&:first).last
+  if TTY::Prompt.new.select "change current options if needed:", [
+    {name: "expiration: #{services_default[:name]}", value: services},
+    {name: "proceed", value: nil},
+  ], default: "proceed",
     filter: true, cycle: true, per_page: 100
+  TTY::Prompt.new.select "expiration:", services.map(&:last),
+    default: services_default[:name],
+    filter: true, cycle: true, per_page: 100
+  else
+    services_default[:value]
+  end
 rescue TTY::Reader::InputInterrupt
-  abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the line
-end.paste
+  abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the last printed line
+end
+if ENV.include? "DRYRUN"
+  require "pp"
+  pp paster
+else
+  paster.paste
+end
+
 puts ""

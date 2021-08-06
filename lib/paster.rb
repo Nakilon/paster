@@ -6,8 +6,10 @@ NetHTTPUtils.class_variable_get(:@@_405).add "paste.debian.net"
 # TODO: upgrade the NetHTTPUtils gem finally to switch to no HEAD calls by default
 
 def Paster paste
-  Struct.new :expire, :lang do
+  Struct.new :lang, :expire do
     @paste = paste
+    # TODO: write the reasons why we use Struct and differ its attrs from the instance variables
+    # one of them is that we don't want to see @paste in .inspect (but that's not the only way to do it though)
 
     def initialize
       STDOUT.sync = true

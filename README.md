@@ -58,7 +58,7 @@ Without argv or pipe it will consume your OS clipboard.
 Some early version demo GIF:
 ![t-rec_1](https://user-images.githubusercontent.com/2870363/123653688-11005480-d836-11eb-8e07-3a9562c8596f.gif)
 
-The env var `LOGLEVEL_Paster` being set to `INFO` or `DEBUG` enriches the output with debug info from the underlying NetHTTPUtils gem.
+The env var `LOGLEVEL_Paster` being set to `INFO` or `DEBUG` enriches the output with some debug info.
 
 ## Possible issues
 
@@ -79,19 +79,22 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
 - [x] examples for README
   - [x] plain text
   - [x] gif
+- [ ] CLI interfaces
+  - [x] interactive tty-prompt
+  - [ ] non-interactive mode
+- [x] some debug option
+- [x] push to rubygems
+- [ ] save preferences
+- [ ] tests
+  - [ ] webmock to get rid of nethttputils
+- [ ] announce
+  - [ ] on reddit
+  - [ ] on each existing service channel
 - [ ] pastebin options
   - [x] expire
   - [x] raw
   - [ ] unlisted
   - [ ] ...
-- [ ] CLI interfaces
-  - [x] interactive tty-prompt
-  - [ ] non-interactive mode
-- [ ] some debug option
-- [ ] tests
-- [ ] save preferences
-- [x] push to rubygems
-- [ ] announce
 - [ ] pastebins
   - [x] sprunge.us
   - [x] paste.the-compiler.org
