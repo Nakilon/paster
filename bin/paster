@@ -10,12 +10,13 @@ $stdin = open "/dev/tty"
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
-puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspected : inspected[0,27] + "..."}}"
+puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspected : inspected[0,27] + "..."}"
 puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
 puts ""
 
-paster = begin
-  services = {
+paster = begin  # TODO: we overwrite this identifier, why not?
+  calculate_expire = lambda do
+  {
     "burn after reading": ["burn"],
     "5 minutes": [5],
     "1 hour": [60, 3600],
@@ -31,26 +32,30 @@ paster = begin
     paster.expire = value
     size = paster.services.size
     size.zero? ?
-      [size, {name: "#{name}", value: paster, disabled: "(no pastebins)"}] :
-      [size, {name: "#{name} (#{size})", value: paster}]
+      [size, {name: "#{name}",           value: [paster, "#{name}"          ], disabled: "(no pastebins)"}] :
+      [size, {name: "#{name} (#{size})", value: [paster, "#{name} (#{size})"]}]
   }
-
-  abort "no pastebin for such size" if services.all?{ |__, _| _[:disabled] }
+  end
+  options_expire = calculate_expire.call
+  abort "no pastebin for such size" if options_expire.all?{ |__, _| _[:disabled] }
   # otherwise tty-prompt fails with an unhandled exception, lol
+  selected_expire = options_expire.max_by(&:first).last[:value]
 
   require "tty-prompt"
-  services_default = services.max_by(&:first).last
-  if TTY::Prompt.new.select "change current options if needed:", [
-        {name: "expiration: #{services_default[:name]}", value: services},
+  loop do
+    break unless (
+      option = TTY::Prompt.new.select "change current options if needed:", [
+        {name: "expiration: #{selected_expire[1]}", value: options_expire},
         {name: "proceed", value: nil},
       ], default: "proceed",
         filter: true, cycle: true, per_page: 100
-    TTY::Prompt.new.select "expiration:", services.map(&:last),
-      default: services_default[:name],
+    )
+    selected_expire = TTY::Prompt.new.select "expiration:", option.map(&:last),
+      default: selected_expire[1],
       filter: true, cycle: true, per_page: 100
-  else
-    services_default[:value]
+    options_expire = calculate_expire.call
   end
+  selected_expire[0]
 rescue TTY::Reader::InputInterrupt
   abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the last printed line
 end
