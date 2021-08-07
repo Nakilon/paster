@@ -17,28 +17,28 @@ require "tty-prompt"  # if we delay this the rescue matcher may say 'uninitializ
 begin  # TODO: we overwrite this identifier, why not?
   options = [
     [
-    {
-      "burn after reading": ["burn"],
-      "5 minutes": [5],
-      "1 hour": [60, 3600],
-      "1 day": [1440, 86400],
-      "3 days": [nil, 259200],
-      "1 week": [10080],
-      "1 month": [40320],
-      "3 months": [nil, 7776000],
-      "1 year": [483840],
-      "virtually forever": [0, -1],
-    },
-    :expire,
-    "expiration",
+      {
+        "burn after reading": ["burn"],
+        "5 minutes": [5],
+        "1 hour": [60, 3600],
+        "1 day": [1440, 86400],
+        "3 days": [nil, 259200],
+        "1 week": [10080],
+        "1 month": [40320],
+        "3 months": [nil, 7776000],
+        "1 year": [483840],
+        "virtually forever": [0, -1],
+      },
+      :expire,
+      "expiration",
     ],
     [
-    {
-      "unlisted": true,
-      "public": false,
-    },
-    :unlisted,
-    "visibility",
+      {
+        "unlisted": true,
+        "public": false,
+      },
+      :unlisted,
+      "visibility",
     ],
   ]
   apply_variants = lambda do |paster, variants, option_name, _|
@@ -58,12 +58,10 @@ begin  # TODO: we overwrite this identifier, why not?
 
   loop do
     option, index = TTY::Prompt.new.select "change current options if needed:", [
-      *options.map.with_index{ |option, i|
-        {name: "#{option[2]}: #{names[i]}", value: [option, i]}
-      },
-        {name: "proceed", value: nil},
-      ], default: "proceed",
-        filter: true, cycle: true, per_page: 100
+      *options.map.with_index{ |option, i| {name: "#{option[2]}: #{names[i]}", value: [option, i]} },
+      {name: "proceed", value: nil},
+    ], default: "proceed",
+      filter: true, cycle: true, per_page: 100
     break unless option
     paster, names[index] = TTY::Prompt.new.select "#{option[2]}:",
       apply_variants.call(paster, *option).map{ |name, paster|
