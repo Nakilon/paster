@@ -16,20 +16,6 @@ puts ""
 
 require "tty-prompt"  # if we delay this the rescue matcher may say 'uninitialized constant TTY'
 paster = begin  # TODO: we overwrite this identifier, why not?
-  try = lambda do |paster, variants, option_name, _|
-    variants.map do |variant_name, value|
-      [variant_name, paster.dup.tap{ |_| _[option_name] = value }]
-    end
-  end
-  calculate_options = lambda do |options|
-    options.map do |name, paster|
-      size = paster.services.size
-      size.zero? ?
-        [size, {name: "#{name}",           value: [paster, name, "#{name}"          ], disabled: "(no pastebins)"}] :
-        [size, {name: "#{name} (#{size})", value: [paster, name, "#{name} (#{size})"]}]
-    end
-  end
-
   calculate_expire = [
     {
       "burn after reading": ["burn"],
@@ -46,7 +32,21 @@ paster = begin  # TODO: we overwrite this identifier, why not?
     :expire,
     "expiration",
   ]
-  options = [calculate_expire].reduce [[[], paster]] do |pasters, option|
+  calculate_unlisted = [
+    {
+      "unlisted": true,
+      "public": false,
+    },
+    :unlisted,
+    "visibility",
+  ]
+
+  try = lambda do |paster, variants, option_name, _|
+    variants.map do |variant_name, value|
+      [variant_name, paster.dup.tap{ |_| _[option_name] = value }]
+    end
+  end
+  options = [calculate_expire, calculate_unlisted].reduce [[[], paster]] do |pasters, option|
     pasters.flat_map do |names, paster|
       try.call(paster, *option).map do |variant_name, paster|
         [[*names, variant_name], paster]
@@ -57,9 +57,18 @@ paster = begin  # TODO: we overwrite this identifier, why not?
   abort "no pastebin for such size" if paster.services.size.zero?
   # otherwise tty-prompt fails with an unhandled exception, lol
 
+  calculate_options = lambda do |options|
+    options.map do |name, paster|
+      size = paster.services.size
+      size.zero? ?
+        [size, {name: "#{name}",           value: [paster, name, "#{name}"          ], disabled: "(no pastebins)"}] :
+        [size, {name: "#{name} (#{size})", value: [paster, name, "#{name} (#{size})"]}]
+    end
+  end
   loop do
     option, option_name, name, index = TTY::Prompt.new.select "change current options if needed:", [
         {name: "expiration: #{names[0]}", value: [calculate_expire, calculate_expire[2], names[0], 0]},
+        {name: "visibility: #{names[1]}", value: [calculate_unlisted, calculate_unlisted[2], names[1], 1]},
         {name: "proceed", value: nil},
       ], default: "proceed",
         filter: true, cycle: true, per_page: 100

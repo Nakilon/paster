@@ -97,7 +97,8 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
   - [ ] ...
 - [ ] pastebins
   - [x] sprunge.us
-  - [x] paste.the-compiler.org
+  - [ ] powered by Stikked
+    - [x] paste.the-compiler.org
   - [ ] paste.debian.net
     - [x] multipart/form-data
     - [ ] XML RPC
