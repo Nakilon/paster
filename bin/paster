@@ -15,6 +15,15 @@ puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to '
 puts ""
 
 paster = begin  # TODO: we overwrite this identifier, why not?
+  calculate_options = lambda do |options|
+    options.call.map do |paster, name|
+      size = paster.services.size
+      size.zero? ?
+        [size, {name: "#{name}",           value: [paster, "#{name}"          ], disabled: "(no pastebins)"}] :
+        [size, {name: "#{name} (#{size})", value: [paster, "#{name} (#{size})"]}]
+    end
+  end
+
   calculate_expire = lambda do
     {
       "burn after reading": ["burn"],
@@ -30,15 +39,12 @@ paster = begin  # TODO: we overwrite this identifier, why not?
     }.map{ |name, value|
       paster = paster.dup
       paster.expire = value
-      size = paster.services.size
-      size.zero? ?
-        [size, {name: "#{name}",           value: [paster, "#{name}"          ], disabled: "(no pastebins)"}] :
-        [size, {name: "#{name} (#{size})", value: [paster, "#{name} (#{size})"]}]
+      [paster, name]
     }
   end
-  options_expire = calculate_expire.call
-  abort "no pastebin for such size" if options_expire.all?{ |__, _| _[:disabled] }
-  # otherwise tty-prompt fails with an unhandled exception, lol
+  options_expire = calculate_options.call calculate_expire
+  abort "no pastebin for such size" if options_expire.all?{ |__, _| _[:disabled] } # otherwise tty-prompt fails with an unhandled exception, lol
+
   selected_expire = options_expire.max_by(&:first).last[:value]
 
   require "tty-prompt"
@@ -53,8 +59,9 @@ paster = begin  # TODO: we overwrite this identifier, why not?
     selected_expire = TTY::Prompt.new.select "expiration:", option.map(&:last),
       default: selected_expire[1],
       filter: true, cycle: true, per_page: 100
-    options_expire = calculate_expire.call
+    options_expire = calculate_options.call calculate_expire.call
   end
+
   selected_expire[0]
 rescue TTY::Reader::InputInterrupt
   abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the last printed line
