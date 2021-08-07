@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-Signal.trap(:INT){ abort "\n(interrupted by SIGINT)" }
 puts ""
 # puts "(press ^C to abort)"
 
@@ -15,8 +14,9 @@ puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to '
 puts ""
 
 require "tty-prompt"  # if we delay this the rescue matcher may say 'uninitialized constant TTY'
-paster = begin  # TODO: we overwrite this identifier, why not?
-  calculate_expire = [
+begin  # TODO: we overwrite this identifier, why not?
+  options = [
+    [
     {
       "burn after reading": ["burn"],
       "5 minutes": [5],
@@ -31,57 +31,53 @@ paster = begin  # TODO: we overwrite this identifier, why not?
     },
     :expire,
     "expiration",
-  ]
-  calculate_unlisted = [
+    ],
+    [
     {
       "unlisted": true,
       "public": false,
     },
     :unlisted,
     "visibility",
+    ],
   ]
-
-  try = lambda do |paster, variants, option_name, _|
+  apply_variants = lambda do |paster, variants, option_name, _|
     variants.map do |variant_name, value|
       [variant_name, paster.dup.tap{ |_| _[option_name] = value }]
     end
   end
-  options = [calculate_expire, calculate_unlisted].reduce [[[], paster]] do |pasters, option|
+
+  names, paster = options.reduce [[[], paster]] do |pasters, option|
     pasters.flat_map do |names, paster|
-      try.call(paster, *option).map do |variant_name, paster|
+      apply_variants.call(paster, *option).map do |variant_name, paster|
         [[*names, variant_name], paster]
       end
     end
-  end
-  names, paster = options.max_by{ |_, paster| paster.services.size }
-  abort "no pastebin for such size" if paster.services.size.zero?
-  # otherwise tty-prompt fails with an unhandled exception, lol
+  end.max_by{ |_, paster| paster.services.size }
+  abort "no pastebin for such size" if paster.services.size.zero?  # otherwise tty-prompt fails with an unhandled exception, lol
 
-  calculate_options = lambda do |options|
-    options.map do |name, paster|
-      size = paster.services.size
-      size.zero? ?
-        [size, {name: "#{name}",           value: [paster, name, "#{name}"          ], disabled: "(no pastebins)"}] :
-        [size, {name: "#{name} (#{size})", value: [paster, name, "#{name} (#{size})"]}]
-    end
-  end
   loop do
-    option, option_name, name, index = TTY::Prompt.new.select "change current options if needed:", [
-        {name: "expiration: #{names[0]}", value: [calculate_expire, calculate_expire[2], names[0], 0]},
-        {name: "visibility: #{names[1]}", value: [calculate_unlisted, calculate_unlisted[2], names[1], 1]},
+    option, index = TTY::Prompt.new.select "change current options if needed:", [
+      *options.map.with_index{ |option, i|
+        {name: "#{option[2]}: #{names[i]}", value: [option, i]}
+      },
         {name: "proceed", value: nil},
       ], default: "proceed",
         filter: true, cycle: true, per_page: 100
     break unless option
-    t = TTY::Prompt.new.select "#{option_name}:", calculate_options.call(try.call paster, *option).map(&:last),
-      default: option[0].keys.index(name) + 1,
+    paster, names[index] = TTY::Prompt.new.select "#{option[2]}:",
+      apply_variants.call(paster, *option).map{ |name, paster|
+        size = paster.services.size
+        size.zero? ?
+          {name: "#{name}",           value: [paster, name], disabled: "(no pastebins)"} :
+          {name: "#{name} (#{size})", value: [paster, name]}
+      },
+      default: option[0].keys.index(names[index]) + 1,
       filter: true, cycle: true, per_page: 100
-    paster = t[0]
-    names[index] = t[1]
   end
-  paster
 rescue TTY::Reader::InputInterrupt
-  abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the last printed line
+  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the last printed line
+  abort "\n\n(interrupted by SIGINT)"
 end
 if ENV.include? "DRYRUN"
   require "pp"
