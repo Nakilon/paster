@@ -14,17 +14,23 @@ puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspect
 puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
 puts ""
 
+require "tty-prompt"  # if we delay this the rescue matcher may say 'uninitialized constant TTY'
 paster = begin  # TODO: we overwrite this identifier, why not?
+  try = lambda do |paster, variants, option_name, _|
+    variants.map do |variant_name, value|
+      [variant_name, paster.dup.tap{ |_| _[option_name] = value }]
+    end
+  end
   calculate_options = lambda do |options|
-    options.call.map do |paster, name|
+    options.map do |name, paster|
       size = paster.services.size
       size.zero? ?
-        [size, {name: "#{name}",           value: [paster, "#{name}"          ], disabled: "(no pastebins)"}] :
-        [size, {name: "#{name} (#{size})", value: [paster, "#{name} (#{size})"]}]
+        [size, {name: "#{name}",           value: [paster, name, "#{name}"          ], disabled: "(no pastebins)"}] :
+        [size, {name: "#{name} (#{size})", value: [paster, name, "#{name} (#{size})"]}]
     end
   end
 
-  calculate_expire = lambda do
+  calculate_expire = [
     {
       "burn after reading": ["burn"],
       "5 minutes": [5],
@@ -36,33 +42,35 @@ paster = begin  # TODO: we overwrite this identifier, why not?
       "3 months": [nil, 7776000],
       "1 year": [483840],
       "virtually forever": [0, -1],
-    }.map{ |name, value|
-      paster = paster.dup
-      paster.expire = value
-      [paster, name]
-    }
+    },
+    :expire,
+    "expiration",
+  ]
+  options = [calculate_expire].reduce [[[], paster]] do |pasters, option|
+    pasters.flat_map do |names, paster|
+      try.call(paster, *option).map do |variant_name, paster|
+        [[*names, variant_name], paster]
+      end
+    end
   end
-  options_expire = calculate_options.call calculate_expire
-  abort "no pastebin for such size" if options_expire.all?{ |__, _| _[:disabled] } # otherwise tty-prompt fails with an unhandled exception, lol
+  names, paster = options.max_by{ |_, paster| paster.services.size }
+  abort "no pastebin for such size" if paster.services.size.zero?
+  # otherwise tty-prompt fails with an unhandled exception, lol
 
-  selected_expire = options_expire.max_by(&:first).last[:value]
-
-  require "tty-prompt"
   loop do
-    break unless (
-      option = TTY::Prompt.new.select "change current options if needed:", [
-        {name: "expiration: #{selected_expire[1]}", value: options_expire},
+    option, option_name, name, index = TTY::Prompt.new.select "change current options if needed:", [
+        {name: "expiration: #{names[0]}", value: [calculate_expire, calculate_expire[2], names[0], 0]},
         {name: "proceed", value: nil},
       ], default: "proceed",
         filter: true, cycle: true, per_page: 100
-    )
-    selected_expire = TTY::Prompt.new.select "expiration:", option.map(&:last),
-      default: selected_expire[1],
+    break unless option
+    t = TTY::Prompt.new.select "#{option_name}:", calculate_options.call(try.call paster, *option).map(&:last),
+      default: option[0].keys.index(name) + 1,
       filter: true, cycle: true, per_page: 100
-    options_expire = calculate_options.call calculate_expire.call
+    paster = t[0]
+    names[index] = t[1]
   end
-
-  selected_expire[0]
+  paster
 rescue TTY::Reader::InputInterrupt
   abort ""  # we don't use TTY::Prompt.new(interrupt: :exit) because it does not finish the last printed line
 end
