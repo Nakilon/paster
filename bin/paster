@@ -9,7 +9,7 @@ $stdin = open "/dev/tty"
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
-puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspected : inspected[0,27] + "..."}"
+puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspected : inspected[0,26] + "...\""}"
 puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
 puts ""
 

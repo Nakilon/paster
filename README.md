@@ -1,4 +1,4 @@
-# [WIP] Paster -- universal asynchronous pastebin CLI
+# Paster -- universal asynchronous pastebin CLI
 
 For your convenience [I explored](https://github.com/Nakilon/pcbr-demo/blob/master/pastebins.txt) the features of ~30 pastebin services and realised that people want different sets of features so I ~~made~~ am making a CLI that asks what exactly you want and then tries to upload your paste to all conforming pastebins services asynchronously printing the returned links until done or until you stop the process with `^C` and gracefully skipping failed submissions.
 
@@ -12,32 +12,47 @@ The tool tries to automatically detect your paste language to behave according t
 
 ## Usage
 
-Paster interactively asks you the options and the number in () means how many pastebin services support them.
+Paster interactively asks you the options and the number in `()` means how many pastebin services support them.
 
 ```none
 $ paster my_code.rb
+
 paste size: 94
+preview: "#!/usr/bin/env ruby\nputs ..."
 detected language: Ruby
+
+change current options if needed: (Press ↑/↓ arrow to move, Enter to select and letters to filter)
+‣ expiration: virtually forever
+  visibility: unlisted
+  proceed
+```
+```none
+...
+change current options if needed: expiration: virtually forever
 expiration: (Press ↑/↓ arrow to move, Enter to select and letters to filter)
-  burn after reading (2)
-  5 minutes (2)
-‣ 1 hour (3)
-  1 day (3)
-  3 days (2)
-  1 week (2)
-  1 month (2)
-  3 months (2)
-  1 year (2)
-  keep forever (3)
+  burn after reading (1)
+  5 minutes (1)
+‣ 1 hour (2)
+  1 day (2)
+  3 days (1)
+  1 week (1)
+  1 month (1)
+  3 months (1)
+  1 year (1)
+  virtually forever (3)
+```
+```none
+...
+change current options if needed: visibility: unlisted
+visibility: (Press ↑/↓ arrow to move, Enter to select and letters to filter)
+‣ unlisted (3)
+  public (3)
 ```
 
 Then it uploads a file to multiple pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
 
 ```none
-$ paster my_code.rb
-paste size: 94
-detected language: Ruby
-expiration: 1 hour (3)
+...
 raw:       http://sprunge.us/Pnc642
 formatted: https://paste.the-compiler.org/view/f194cffe
 raw:       https://paste.the-compiler.org/view/raw/f194cffe
