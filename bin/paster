@@ -37,7 +37,7 @@ begin  # TODO: we overwrite this identifier, why not?
         "unlisted": true,
         "public": false,
       },
-      :unlisted,
+      :unlist,
       "visibility",
     ],
   ]

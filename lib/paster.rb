@@ -6,7 +6,7 @@ NetHTTPUtils.class_variable_get(:@@_405).add "paste.debian.net"
 # TODO: upgrade the NetHTTPUtils gem finally to switch to no HEAD calls by default
 
 def Paster paste
-  Struct.new :lang, :expire, :unlisted do
+  Struct.new :lang, :expire, :unlist do
     @paste = paste
     # TODO: write the reasons why we use Struct and differ its attrs from the instance variables
     # one of them is that we don't want to see @paste in .inspect (but that's not the only way to do it though)
@@ -28,7 +28,7 @@ def Paster paste
       [
         [
           10000000, [0], nil,
-          expire[0],
+          expire[0], false,
           "http://sprunge.us", "sprunge", nil,
           nil,
           ->resp{
@@ -41,7 +41,7 @@ def Paster paste
         ],
         [
           15000000, ["burn", 0, 5, 60, 1440, 10080, 40320, 483840], nil,
-          expire[0],
+          expire[0], true,
           "https://paste.the-compiler.org/api/create", "text", nil,
           File.read("lib/genshi.txt").scan(/'([a-z_0-9-]+)' => '([^']+)',/).rassoc(lang)&.first,
           ->resp{
@@ -59,7 +59,7 @@ def Paster paste
         ],
         [
           150000, [-1, 3600, 86400, 259200, 7776000], ->_{ 2 > _.count("\n") },
-          expire[1],
+          expire[1], true,
           "https://paste.debian.net", "code", :multipart,
           File.read("lib/pygments.txt").scan(/([^']+)', \(([^)]*)/).map{ |_, __| [_, __[/(?<=')[^']*/]] }.assoc(lang)&.last || "-1",
           ->resp{
@@ -86,11 +86,11 @@ def Paster paste
     end
 
     def paste
-      services.map do |_, _, _, expire, url, field, multipart, lang, callback, no_redirect = true, extra = nil|
+      services.map do |_, _, _, expire, unlistable, url, field, multipart, lang, callback, no_redirect = true, extra = {}|
         Thread.new do
           puts begin
             callback.call NetHTTPUtils.request_data url, :post, *multipart, no_redirect: no_redirect,
-              form: {"lang" => lang, "expire" => expire}.map{ |k, v| [k, v.to_s] if v }.compact.to_h.merge(extra || {}).merge({field => self.class.instance_variable_get(:@paste)})
+              form: {lang: lang, expire: expire}.merge({private: (1 if unlistable && unlist)}).map{ |k, v| [k.to_s, v.to_s] if v }.compact.to_h.merge(extra).merge({field => self.class.instance_variable_get(:@paste)})
             # if we .strip the response before sending to callback it won't haev the last_response instance_variable
           rescue => e
             "failed to paste to #{url}: #{e} -- consider reporting this issue to GitHub"
