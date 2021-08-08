@@ -1,6 +1,6 @@
 # Paster -- universal asynchronous pastebin CLI
 
-For your convenience [I explored](https://github.com/Nakilon/pcbr-demo/blob/master/pastebins.txt) the features of ~30 pastebin services and realised that people want different sets of features so I ~~made~~ am making a CLI that asks what exactly you want and then tries to upload your paste to all conforming pastebins services asynchronously printing the returned links until done or until you stop the process with `^C` and gracefully skipping failed submissions.
+Paster is a CLI tool that can upload your data to multiple pastebins services at the same so you should not worry if some of them went offline or which of them support the options you want such as expiration date or visibility. It uploads asynchronously gracefully skipping failed requests, printing the returned links until done or until you stop the process with `^C`.
 
 ## Installation
 
@@ -12,7 +12,21 @@ The tool tries to automatically detect your paste language to behave according t
 
 ## Usage
 
-Paster interactively asks you the options and the number in `()` means how many pastebin services support them.
+### Upload sources
+
+* You can pass a file as an argument:
+  ```bash
+  paster ~/.ssh/id_rsa.pub
+  ```
+* Or pipe the input:
+  ```bash
+  ls -l | paster
+  ```
+* Without argv or pipe it will read from your OS clipboard.
+
+Currently the gem has been tested only on macOS.
+
+### Dialog
 
 ```none
 $ paster my_code.rb
@@ -26,20 +40,24 @@ change current options if needed: (Press ↑/↓ arrow to move, Enter to select 
   visibility: unlisted
   proceed
 ```
+
+The dialog shows currently selected combination of options.
+When you chose one to change the number in `()` means how many pastebin services support them.
+
 ```none
 ...
 change current options if needed: expiration: virtually forever
 expiration: (Press ↑/↓ arrow to move, Enter to select and letters to filter)
   burn after reading (1)
   5 minutes (1)
-‣ 1 hour (2)
+  1 hour (2)
   1 day (2)
   3 days (1)
   1 week (1)
   1 month (1)
   3 months (1)
   1 year (1)
-  virtually forever (3)
+‣ virtually forever (3)
 ```
 ```none
 ...
@@ -49,7 +67,7 @@ visibility: (Press ↑/↓ arrow to move, Enter to select and letters to filter)
   public (3)
 ```
 
-Then it uploads a file to multiple pastebins printing the URLs in the order of whichever of them was faster to fulfil the request:
+Finally when you chose "proceed" it uploads the input printing the URLs in order of getting responses:
 
 ```none
 ...
@@ -61,19 +79,14 @@ raw:       https://paste.debian.net/plain/1205711
 delete:    https://paste.debian.net/delete/8080846590e7151ad30e47d0584aabf01922f1da
 ```
 
-You can also pipe the stdout:
+### Environment variables
 
-```none
-$ ls -l | paster
-...
-```
+* `LOGLEVEL_Paster` being set to `INFO` or `DEBUG` enriches the output with some debug info.
+* `DRYRUN` being set to any value prints the selected options in the end but does not upload.
 
-Without argv or pipe it will consume your OS clipboard.
+### Some early version demo GIF
 
-Some early version demo GIF:
 ![t-rec_1](https://user-images.githubusercontent.com/2870363/123653688-11005480-d836-11eb-8e07-3a9562c8596f.gif)
-
-The env var `LOGLEVEL_Paster` being set to `INFO` or `DEBUG` enriches the output with some debug info.
 
 ## Possible issues
 
@@ -101,14 +114,14 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
 - [x] push to rubygems
 - [ ] save preferences
 - [ ] tests
-  - [ ] webmock to get rid of nethttputils
 - [ ] announce
   - [ ] on reddit
   - [ ] on each existing service channel
 - [ ] pastebin options
   - [x] expire
   - [x] raw
-  - [ ] unlisted
+  - [x] delete
+  - [x] unlisted
   - [ ] ...
 - [ ] pastebins
   - [x] sprunge.us
