@@ -24,22 +24,23 @@ describe :prompt do
     "disable-extensions-except" => "#{File.expand_path __dir__}/iodihamcpbpeioajjeobimgagajmlibd/0.43_0",
     "load-extension"            => "#{File.expand_path __dir__}/iodihamcpbpeioajjeobimgagajmlibd/0.43_0",
   }
-    br.go_to "chrome://extensions/?id=iodihamcpbpeioajjeobimgagajmlibd"
-    br.evaluate("document.getElementsByTagName('extensions-manager')[0].shadowRoot.querySelector('extensions-detail-view').shadowRoot.querySelector('#allow-incognito').shadowRoot.querySelector('[role=button]')").click
-    sleep 1
+  br.go_to "chrome://extensions/?id=iodihamcpbpeioajjeobimgagajmlibd"
+  br.evaluate("document.getElementsByTagName('extensions-manager')[0].shadowRoot.querySelector('extensions-detail-view').shadowRoot.querySelector('#allow-incognito').shadowRoot.querySelector('[role=button]')").click
+  sleep 1
+
+  before do
     wait_to_find_xpath = lambda do |selector, timeout: 2, &block|
       Timeout.timeout(timeout) do
         sleep 0.1 until found = (block ? block.call : br).at_xpath(selector)
         found
       end
     end
-
-  before do
     br.go_to "chrome-extension://iodihamcpbpeioajjeobimgagajmlibd/html/nassh.html#nakilon@localhost"
     wait_to_find_xpath.call("//*[*[contains(text(),'fingerprint')]]//input"){ br.frames.last }.type("yes\n")
     br.execute "window.removeEventListener('beforeunload', nassh_.onBeforeUnload_)"
     wait_to_find_xpath.call("//*[*[contains(text(),'Password')]]//input"){ br.frames.last }.type("#{File.read "password"}\n")
   end
+
   it "^C" do
     br.keyboard.type "cd #{Shellwords.escape File.expand_path __dir__}\n"
 
