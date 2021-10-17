@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name         = "paster"
-  spec.version      = "0.0.4"
+  spec.version      = "0.1.0"
   spec.summary      = "universal asynchronous pastebin CLI"
 
   spec.author       = "Victor Maslov aka Nakilon"

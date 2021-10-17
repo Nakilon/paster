@@ -5,7 +5,7 @@ puts ""
 paste = (!STDIN.tty? && !STDIN.closed? || ARGF.filename != ?-) ? ARGF.read : (require "clipboard"; Clipboard.paste)
 # https://stackoverflow.com/a/68673623/322020
 
-$stdin = open "/dev/tty"
+$stdin = open "/dev/tty"  # I suppose it was a fix for piping
 puts "paste size: #{paste.size}"
 require_relative "../lib/paster"
 paster = Paster paste
@@ -13,21 +13,19 @@ puts "preview: #{inspected = paste[0,30].inspect; inspected.size <= 30 ? inspect
 puts "detected language: #{paster.lang || "unknown"}"   # change 'detected' to 'assumed' if we make it guess by file extension
 puts ""
 
-require "tty-prompt"  # if we delay this the rescue matcher may say 'uninitialized constant TTY'
-begin  # TODO: we overwrite this identifier, why not?
   options = [
     [
       {
         "burn after reading": ["burn"],
-        "5 minutes": [5],
-        "1 hour": [60, 3600],
-        "1 day": [1440, 86400],
-        "3 days": [nil, 259200],
-        "1 week": [10080],
-        "1 month": [40320],
-        "3 months": [nil, 7776000],
-        "1 year": [483840],
-        "virtually forever": [0, -1],
+        "5 minutes":          [5     ],
+        "1 hour":             [60,   3600],
+        "1 day":              [1440, 86400],
+        "3 days":             [nil,  259200],
+        "1 week":             [10080],
+        "1 month":            [40320],
+        "3 months":           [nil,  7776000],
+        "1 year":             [483840],
+        "virtually forever":  [0,    -1],
       },
       :expire,
       "expiration",
@@ -41,36 +39,41 @@ begin  # TODO: we overwrite this identifier, why not?
       "visibility",
     ],
   ]
-  apply_variants = lambda do |paster, variants, option_name, _|
+  # emits variants of a single option
+  apply_variants = lambda do |paster, (variants, option_name, *)|
     variants.map do |variant_name, value|
       [variant_name, paster.dup.tap{ |_| _[option_name] = value }]
     end
   end
 
-  names, paster = options.reduce [[[], paster]] do |pasters, option|
-    pasters.flat_map do |names, paster|
-      apply_variants.call(paster, *option).map do |variant_name, paster|
-        [[*names, variant_name], paster]
+require "tty-prompt"
+begin
+  # starting options are chosen in a way to maximize the number of applicatble services
+  # 'names' is where we store the currently selected options in textual form as ids fpr tty-prompt
+  paster, *names = options.reduce [[paster]] do |pasters, option|
+    pasters.flat_map do |paster, *names|
+      apply_variants.call(paster, option).map do |variant_name, paster|
+        [paster, *names, variant_name]
       end
     end
-  end.max_by{ |_, paster| paster.services.size }
-  abort "no pastebin for such size" if paster.services.size.zero?  # otherwise tty-prompt fails with an unhandled exception, lol
+  end.max_by{ |paster,| paster.services.size }
+  abort "no pastebin for such size" if paster.services.size.zero?  # otherwise tty-prompt fails with an unhandled exception, TODO: test with cli-ui
 
   loop do
-    option, index = TTY::Prompt.new.select "change current options if needed:", [
-      *options.map.with_index{ |option, i| {name: "#{option[2]}: #{names[i]}", value: [option, i]} },
+    index = TTY::Prompt.new.select "change current options if needed:", [
+      *options.map.with_index{ |option, i| {name: "#{option.last}: #{names[i]}", value: i} },
       {name: "proceed", value: nil},
     ], default: "proceed",
       filter: true, cycle: true, per_page: 100
-    break unless option
-    paster, names[index] = TTY::Prompt.new.select "#{option[2]}:",
-      apply_variants.call(paster, *option).map{ |name, paster|
+    break unless index
+    paster, names[index] = TTY::Prompt.new.select "#{options[index].last}:",
+      apply_variants.call(paster, options[index]).map{ |variant_name, paster|
         size = paster.services.size
         size.zero? ?
-          {name: "#{name}",           value: [paster, name], disabled: "(no pastebins)"} :
-          {name: "#{name} (#{size})", value: [paster, name]}
+          {name: "#{variant_name}",           value: [paster, variant_name], disabled: "(no pastebins)"} :
+          {name: "#{variant_name} (#{size})", value: [paster, variant_name]}
       },
-      default: option[0].keys.index(names[index]) + 1,
+      default: options[index].first.keys.index(names[index]) + 1,
       filter: true, cycle: true, per_page: 100
   end
 rescue TTY::Reader::InputInterrupt
