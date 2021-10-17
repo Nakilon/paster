@@ -28,6 +28,23 @@ describe :prompt do
   br.evaluate("document.getElementsByTagName('extensions-manager')[0].shadowRoot.querySelector('extensions-detail-view').shadowRoot.querySelector('#allow-incognito').shadowRoot.querySelector('[role=button]')").click
   sleep 1
 
+  get_current_lines = ->{ br.evaluate("term_.getRowsText(0, term_.getRowCount())").split("\n") }
+  get_new_lines = lambda do |&block|
+    lines1 = get_current_lines.call
+    block.call
+    lines2 = get_current_lines.call
+    lines2.zip(lines1).drop_while{ |a,b| a==b }.map(&:first)
+  end
+  wait_for_still_frame = lambda do |wait_time = 2, freeze_time = 1|
+    Timeout.timeout wait_time do
+      frames = []
+      until frames.last(freeze_time * 10).size == freeze_time * 10 && frames.last(freeze_time * 10).uniq.size == 1
+        sleep 0.1
+        frames.push get_current_lines.call
+      end
+    end
+  end
+
   before do
     wait_to_find_xpath = lambda do |selector, timeout: 2, &block|
       Timeout.timeout(timeout) do
@@ -39,25 +56,15 @@ describe :prompt do
     wait_to_find_xpath.call("//*[*[contains(text(),'fingerprint')]]//input"){ br.frames.last }.type("yes\n")
     br.execute "window.removeEventListener('beforeunload', nassh_.onBeforeUnload_)"
     wait_to_find_xpath.call("//*[*[contains(text(),'Password')]]//input"){ br.frames.last }.type("#{File.read "password"}\n")
-  end
 
-  it "^C" do
     br.keyboard.type "cd #{Shellwords.escape File.expand_path __dir__}\n"
-
-    get_current_lines = ->{ br.evaluate("term_.getRowsText(0, term_.getRowCount())").split("\n") }
-    get_new_lines = lambda do |&block|
-      lines1 = get_current_lines.call
-      block.call
-      lines2 = get_current_lines.call
-      lines2.zip(lines1).drop_while{ |a,b| a==b }.map(&:first)
-    end
 
     Timeout.timeout 1 do
       sleep 0.1 until "naki:paster nakilon$ " == get_current_lines.call.last
     end
     assert_equal [
       "",
-      "paste size: 65",
+      "paste size: 82",
       "preview: \"gemspec\\n\\ngem \\\"rubyzip\\...\"",
       "detected language: unknown",
       "",
@@ -68,19 +75,31 @@ describe :prompt do
     ], (
       get_new_lines.call do
         br.keyboard.type "bundle exec ./bin/paster Gemfile\n"
-        Timeout.timeout 2 do
-          frames = []
-          until frames.last(10).size == 10 && frames.last(10).uniq.size == 1
-            sleep 0.1
-            frames.push get_current_lines.call
-          end
-        end
+        wait_for_still_frame.call 3
       end.drop 1
     )
+  end
 
+  it "^C" do
     assert_equal \
       ["", "(interrupted by SIGINT)", "naki:paster nakilon$ "],
-      get_new_lines.call{ br.keyboard.type :ctrl, ?c; sleep 0.1 }
+      get_new_lines.call{ br.keyboard.type :ctrl, ?c; wait_for_still_frame.call }
   end
+
+  it "Enter" do
+    lines = get_new_lines.call{ br.keyboard.type "\n"; wait_for_still_frame.call 4, 2 }
+    assert_equal ["change current options if needed: proceed"], lines.first(1)
+    assert_equal ["", "naki:paster nakilon$ "], lines.last(2)
+    require "nakischema"
+    Nakischema.validate lines[1..-3].sort, [[
+      /\Adelete:    https:\/\/paste\.debian\.net\/delete\/[a-z0-9]{40}\z/,
+      /\Aformatted: https:\/\/paste\.debian\.net\/hidden\/[a-z0-9]{8}\z/,
+      /\Aformatted: https:\/\/paste\.the-compiler\.org\/view\/[a-z0-9]{8}\z/,
+      /\Araw:       http:\/\/sprunge\.us\/[a-zA-Z0-9]{6}\z/,
+      /\Araw:       https:\/\/paste\.debian\.net\/hidden\/plain\/[a-z0-9]{8}\z/,
+      /\Araw:       https:\/\/paste\.the-compiler\.org\/view\/raw\/[a-z0-9]{8}\z/,
+    ]]
+  end
+
 end
 
