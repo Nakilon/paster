@@ -1,3 +1,5 @@
+require "minitest/autorun"
+
 unless File.exist? "iodihamcpbpeioajjeobimgagajmlibd"
   begin
     require "tempfile"
@@ -18,6 +20,9 @@ unless File.exist? "iodihamcpbpeioajjeobimgagajmlibd"
     tempfile.unlink
   end
 end
+
+describe :test do
+  it do
 
 require "ferrum"
 br = Ferrum::Browser.new headless: false, browser_options: {
@@ -49,16 +54,32 @@ end
 Timeout.timeout 1 do
   sleep 0.1 until "naki:paster nakilon$ " == get_current_lines.call.last
 end
-new_lines = get_new_lines.call do
-  br.keyboard.type "paster Gemfile\n"
+    assert_equal [
+      "",
+      "paste size: 65",
+      "preview: \"gemspec\\n\\ngem \\\"rubyzip\\...\"",
+      "detected language: unknown",
+      "",
+      "change current options if needed: (Press ↑/↓ arrow to move, Enter to select and letters to filter)",
+      "  expiration: virtually forever",
+      "  visibility: unlisted",
+      "‣ proceed"
+    ], (
+      get_new_lines.call do
+      br.keyboard.type "bundle exec ./bin/paster Gemfile\n"
   Timeout.timeout 2 do
     frames = []
     until frames.last(10).size == 10 && frames.last(10).uniq.size == 1
       sleep 0.1
       frames.push get_current_lines.call
     end
+        end
+      end.drop 1
+    )
+
+    assert_equal \
+      ["", "(interrupted by SIGINT)", "naki:paster nakilon$ "],
+      get_new_lines.call{ br.keyboard.type :ctrl, "c"; sleep 0.1 }
   end
 end
-require "pp"
-pp new_lines.drop 1
 
