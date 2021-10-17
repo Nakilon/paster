@@ -1,9 +1,5 @@
 require "nethttputils"
 NetHTTPUtils.logger.level = ENV.fetch("LOGLEVEL_Paster", "fatal").to_sym
-NetHTTPUtils.class_variable_get(:@@_405).add "sprunge.us"
-NetHTTPUtils.class_variable_get(:@@_405).add "paste.the-compiler.org"
-NetHTTPUtils.class_variable_get(:@@_405).add "paste.debian.net"
-# TODO: upgrade the NetHTTPUtils gem finally to switch to no HEAD calls by default
 
 def Paster paste
   Struct.new :lang, :expire, :unlist do
@@ -91,7 +87,7 @@ def Paster paste
           puts begin
             callback.call NetHTTPUtils.request_data url, :post, *multipart, no_redirect: no_redirect,
               form: {lang: lang, expire: expire}.merge({private: (1 if unlistable && unlist)}).map{ |k, v| [k.to_s, v.to_s] if v }.compact.to_h.merge(extra).merge({field => self.class.instance_variable_get(:@paste)})
-            # if we .strip the response before sending to callback it won't haev the last_response instance_variable
+            # if we .strip the response before sending to callback it won't have the last_response instance_variable that we need for some services
           rescue => e
             "failed to paste to #{url}: #{e} -- consider reporting this issue to GitHub"
           end

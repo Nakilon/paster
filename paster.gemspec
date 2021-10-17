@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name         = "paster"
-  spec.version      = "0.0.3"
+  spec.version      = "0.0.4"
   spec.summary      = "universal asynchronous pastebin CLI"
 
   spec.author       = "Victor Maslov aka Nakilon"
@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.metadata     = {"source_code_uri" => "https://github.com/nakilon/paster"}
 
   spec.add_dependency "clipboard"
-  spec.add_dependency "nethttputils", "~>0.4.1.3"
+  spec.add_dependency "nethttputils", "~>0.4.3.0"
   spec.add_dependency "github-linguist"
   spec.add_dependency "oga"
   spec.add_dependency "tty-prompt"
@@ -17,4 +17,6 @@ Gem::Specification.new do |spec|
   spec.files        = %w{ LICENSE paster.gemspec bin/paster lib/paster.rb lib/genshi.txt lib/pygments.txt }
   spec.bindir       = "bin"
   spec.executable   = "paster"
+
+  spec.required_ruby_version = ">=2.3"  # for &. and for Logger#level=Symbol
 end

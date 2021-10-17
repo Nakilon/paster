@@ -1,4 +1,7 @@
-/pkg/
 /Gemfile.lock
-/temp*
+/pkg/
+/iodihamcpbpeioajjeobimgagajmlibd
+/password
+
 /*.gif
+/temp*
