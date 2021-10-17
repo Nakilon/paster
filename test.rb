@@ -45,6 +45,8 @@ describe :prompt do
     end
   end
 
+  prompt = "naki:paster nakilon$ "
+
   before do
     wait_to_find_xpath = lambda do |selector, timeout: 2, &block|
       Timeout.timeout(timeout) do
@@ -59,8 +61,8 @@ describe :prompt do
 
     br.keyboard.type "cd #{Shellwords.escape File.expand_path __dir__}\n"
 
-    Timeout.timeout 1 do
-      sleep 0.1 until "naki:paster nakilon$ " == get_current_lines.call.last
+    Timeout.timeout 2 do
+      sleep 0.1 until prompt == get_current_lines.call.last
     end
     assert_equal [
       "",
@@ -75,21 +77,24 @@ describe :prompt do
     ], (
       get_new_lines.call do
         br.keyboard.type "bundle exec ./bin/paster Gemfile\n"
-        wait_for_still_frame.call 3
+        wait_for_still_frame.call 4, 2
       end.drop 1
     )
+  end
+  after do
+    br.screenshot path: "#{name}.png" unless passed? || skipped?
   end
 
   it "^C" do
     assert_equal \
-      ["", "(interrupted by SIGINT)", "naki:paster nakilon$ "],
+      ["", "(interrupted by SIGINT)", prompt],
       get_new_lines.call{ br.keyboard.type :ctrl, ?c; wait_for_still_frame.call }
   end
 
   it "Enter" do
     lines = get_new_lines.call{ br.keyboard.type "\n"; wait_for_still_frame.call 4, 2 }
     assert_equal ["change current options if needed: proceed"], lines.first(1)
-    assert_equal ["", "naki:paster nakilon$ "], lines.last(2)
+    assert_equal ["", prompt], lines.last(2)
     require "nakischema"
     Nakischema.validate lines[1..-3].sort, [[
       /\Adelete:    https:\/\/paste\.debian\.net\/delete\/[a-z0-9]{40}\z/,

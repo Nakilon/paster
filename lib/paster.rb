@@ -17,7 +17,7 @@ def Paster paste
       assert_one = lambda do |_, resp|
         next if 1 == _.size
         require "tmpdir"
-        filename = File.join Dir.tmpdir, "paster.htm"
+        filename = File.join Dir.tmpdir, "paster.txt"
         File.write filename, resp
         raise RuntimeError.new "can't parse response (stored response to #{filename})"
       end

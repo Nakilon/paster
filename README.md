@@ -108,7 +108,7 @@ TODO: make it able to ignore the missing/broken dependency needed for automatic 
   - [x] plain text
   - [x] gif
 - [ ] CLI interfaces
-  - [x] interactive tty-prompt
+  - [ ] interactive cli-ui
   - [ ] non-interactive mode
 - [x] some debug option
 - [x] push to rubygems
