@@ -1,7 +1,7 @@
 gemspec
 
 gem "rubyzip"
-gem "ferrum"
+gem "ferrum", github: "nakilon/ferrum"
 gem "nakischema"
 gem "minitest"
 

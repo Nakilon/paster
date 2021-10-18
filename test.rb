@@ -66,7 +66,7 @@ describe :prompt do
     end
     assert_equal [
       "",
-      "paste size: 82",
+      "paste size: 108",
       "preview: \"gemspec\\n\\ngem \\\"rubyzip\\...\"",
       "detected language: unknown",
       "",
@@ -77,7 +77,7 @@ describe :prompt do
     ], (
       get_new_lines.call do
         br.keyboard.type "bundle exec ./bin/paster Gemfile\n"
-        wait_for_still_frame.call 4, 2
+        wait_for_still_frame.call 3, 1.5
       end.drop 1
     )
   end
@@ -92,7 +92,7 @@ describe :prompt do
   end
 
   it "Enter" do
-    lines = get_new_lines.call{ br.keyboard.type "\n"; wait_for_still_frame.call 4, 2 }
+    lines = get_new_lines.call{ br.keyboard.type :enter; wait_for_still_frame.call 4, 2 }
     assert_equal ["change current options if needed: proceed"], lines.first(1)
     assert_equal ["", prompt], lines.last(2)
     require "nakischema"
@@ -104,6 +104,17 @@ describe :prompt do
       /\Araw:       https:\/\/paste\.debian\.net\/hidden\/plain\/[a-z0-9]{8}\z/,
       /\Araw:       https:\/\/paste\.the-compiler\.org\/view\/raw\/[a-z0-9]{8}\z/,
     ]]
+  end
+
+  it "change the last option" do
+    a, b = get_current_lines.call.last(2)
+    br.keyboard.type :up, :enter
+    wait_for_still_frame.call 1, 0.5
+    br.keyboard.type :up, :enter
+    wait_for_still_frame.call 1, 0.5
+    c, d = get_current_lines.call.last(2)
+    assert_equal b, d
+    refute_equal a, c
   end
 
 end
